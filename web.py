@@ -14,12 +14,12 @@ class Programm(QWidget):
     def __init__(self):
         super().__init__()
         self.delta = '0.005'
+        self.toponym_lattitude, self.toponym_longitude = lst[0], lst[1]
         self.getImage()
         self.initUI()
 
     def getImage(self):
         try:
-            self.toponym_lattitude, self.toponym_longitude = lst[0], lst[1]
             map_params = {
                 "ll": ",".join([self.toponym_longitude, self.toponym_lattitude]),
                 "spn": ",".join([self.delta, self.delta]),
@@ -58,6 +58,8 @@ class Programm(QWidget):
 
     def keyPressEvent(self, event):
         k = 0.005
+        k_height = float(self.delta)
+        k_width = float(self.delta)
         if event.key() == QtCore.Qt.Key_PageDown:
             if float(self.delta) < k * 100:
                 self.delta = str(float(self.delta) + k)
@@ -69,11 +71,28 @@ class Programm(QWidget):
                 self.delta = str(float(self.delta) - k)
                 self.getImage()
                 self.image.setPixmap(QPixmap('map.png'))
-                self.image.show()                   
-                
-        print(self.delta)
+                self.image.show()
+        if event.key() == QtCore.Qt.Key_Down:
+            self.toponym_lattitude = str(float(self.toponym_lattitude) - k_height)
+            self.getImage()
+            self.image.setPixmap(QPixmap('map.png'))
+            self.image.show()
+        if event.key() == QtCore.Qt.Key_Up:
+            self.toponym_lattitude = str(float(self.toponym_lattitude) + k_height)
+            self.getImage()
+            self.image.setPixmap(QPixmap('map.png'))
+            self.image.show()
+        if event.key() == QtCore.Qt.Key_Left:
+            self.toponym_longitude = str(float(self.toponym_longitude) - k_width)
+            self.getImage()
+            self.image.setPixmap(QPixmap('map.png'))
+            self.image.show()
+        if event.key() == QtCore.Qt.Key_Right:
+            self.toponym_longitude = str(float(self.toponym_longitude) + k_width)
+            self.getImage()
+            self.image.setPixmap(QPixmap('map.png'))
+            self.image.show()
         event.accept()
-
 
 
 class Request(QWidget):
@@ -95,7 +114,6 @@ class Request(QWidget):
     def run(self):
         global lst
         lst += self.name_input.text().split(', ')
-        print(lst)
         self.hide()
         self.window = Programm()
         self.window.show()
