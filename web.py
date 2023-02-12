@@ -4,6 +4,7 @@ import sys
 import requests
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QComboBox
 from PyQt5 import QtCore
 
 SCREEN_SIZE = [600, 450]
@@ -11,8 +12,9 @@ lst = []
 
 
 class Programm(QWidget):
-    def __init__(self):
+    def __init__(self, param):
         super().__init__()
+        self.param = param
         self.delta = '0.005'
         self.toponym_lattitude, self.toponym_longitude = lst[0], lst[1]
         self.getImage()
@@ -25,6 +27,11 @@ class Programm(QWidget):
                 "spn": ",".join([self.delta, self.delta]),
                 "l": "map"
             }
+
+            if self.param == 1:
+                map_params['l'] = 'sat'
+            if self.param == 2:
+                map_params['l'] = 'sat,skl'
 
             map_api_server = "http://static-maps.yandex.ru/1.x/"
             response = requests.get(map_api_server, params=map_params)
@@ -99,6 +106,7 @@ class Request(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.param = 0
 
     def initUI(self):
         self.setGeometry(100, 100, *SCREEN_SIZE)
@@ -106,16 +114,34 @@ class Request(QWidget):
         self.name_input.resize(300, 25)
         self.name_input.move(100, 100)
 
+        self.text = QLabel(self)
+        self.text.setText("Введите координаты:")
+        self.text.move(100, 50)
+
         self.btn = QPushButton('Поиск', self)
         self.btn.resize(self.btn.sizeHint())
         self.btn.move(100, 150)
         self.btn.clicked.connect(self.run)
 
+        self.box = QComboBox(self)
+        self.box.addItems(['Карта', 'Спутник', 'Гибрид'])
+        self.box.resize(self.btn.sizeHint())
+        self.box.move(325, 150)
+        self.box.currentTextChanged.connect(self.change_params)
+
+    def change_params(self):
+        if self.box.currentText() == 'Спутник':
+            self.param = 1
+        elif self.box.currentText() == 'Гибрид':
+            self.param = 2
+        else:
+            self.param = 0
+
     def run(self):
         global lst
         lst += self.name_input.text().split(', ')
         self.hide()
-        self.window = Programm()
+        self.window = Programm(self.param)
         self.window.show()
 
 
