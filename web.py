@@ -17,6 +17,7 @@ class Programm(QWidget):
         self.param = param
         self.delta = '0.005'
         self.toponym_lattitude, self.toponym_longitude = self.get_coords()
+        self.pt_lattitude, self.pt_longitude = self.get_coords()
         self.getImage()
         self.initUI()
 
@@ -42,12 +43,11 @@ class Programm(QWidget):
 
     def getImage(self):
         try:
-
             map_params = {
                 "ll": ",".join([self.toponym_longitude, self.toponym_lattitude]),
                 "spn": ",".join([self.delta, self.delta]),
                 "l": "map",
-                "pt": ",".join([self.toponym_longitude, self.toponym_lattitude]),
+                "pt": ",".join([self.pt_longitude, self.pt_lattitude]),
 
             }
 
