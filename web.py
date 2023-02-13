@@ -16,16 +16,39 @@ class Programm(QWidget):
         super().__init__()
         self.param = param
         self.delta = '0.005'
-        self.toponym_lattitude, self.toponym_longitude = lst[0], lst[1]
+        self.toponym_lattitude, self.toponym_longitude = self.get_coords()
+        self.pt_lattitude, self.pt_longitude = self.get_coords()
         self.getImage()
         self.initUI()
+
+    def get_coords(self):
+        geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+
+        geocoder_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": toponym_to_find,
+            "format": "json"}
+
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+        if not response:
+            pass
+
+        json_response = response.json()
+        toponym = json_response["response"]["GeoObjectCollection"][
+            "featureMember"][0]["GeoObject"]
+        toponym_coodrinates = toponym["Point"]["pos"]
+        toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+
+        return toponym_lattitude, toponym_longitude
 
     def getImage(self):
         try:
             map_params = {
                 "ll": ",".join([self.toponym_longitude, self.toponym_lattitude]),
                 "spn": ",".join([self.delta, self.delta]),
-                "l": "map"
+                "l": "map",
+                "pt": ",".join([self.pt_longitude, self.pt_lattitude]),
+
             }
 
             if self.param == 1:
@@ -129,6 +152,10 @@ class Request(QWidget):
         self.box.move(325, 150)
         self.box.currentTextChanged.connect(self.change_params)
 
+        self.request = QLineEdit(self)
+        self.request.resize(300, 25)
+        self.request.move(100, 200)
+
     def change_params(self):
         if self.box.currentText() == 'Спутник':
             self.param = 1
@@ -138,8 +165,9 @@ class Request(QWidget):
             self.param = 0
 
     def run(self):
-        global lst
+        global lst, toponym_to_find
         lst += self.name_input.text().split(', ')
+        toponym_to_find = self.request.text()
         self.hide()
         self.window = Programm(self.param)
         self.window.show()
